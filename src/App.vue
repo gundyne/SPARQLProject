@@ -42,49 +42,15 @@
       <button class="btn query-btn" :disabled="state.loading" @click="loadData">Query</button>
     </div>
   </div>
+
+  <table-view :head="state.head" :result="state.result"></table-view>
 </template>
 
 <script setup>
-import { reactive } from 'vue';
+import { reactive, onBeforeMount } from 'vue';
 import LoadingSpinner from './components/LoadingSpinner.vue';
-
-const examples = [
-  {
-    id: 0,
-    name: 'example0',
-    query: `#Cats
-SELECT ?item ?itemLabel
-WHERE
-{
-  ?item wdt:P31 wd:Q146.
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
-}`,
-  },
-  {
-    id: 1,
-    name: 'example1',
-    query: `#Goats
-SELECT ?item ?itemLabel
-WHERE
-{
-  ?item wdt:P31 wd:Q2934.
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
-}`,
-  },
-  {
-    id: 2,
-    name: 'example2',
-    query: `#Cats, with pictures
-#defaultView:ImageGrid
-SELECT ?item ?itemLabel ?pic
-WHERE
-{
-?item wdt:P31 wd:Q146 .
-?item wdt:P18 ?pic
-SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" }
-}`,
-  },
-];
+import TableView from './components/TableView.vue';
+import examples from './assets/examples.js';
 
 const initState = {
   endpoint: 'https://query.wikidata.org/sparql',
