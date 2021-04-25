@@ -1,8 +1,8 @@
 <template>
   <div class="endpoint-container">
-    <label for="endpoint">Query endpoint</label>
+    <label for="endpoint-input">Query endpoint</label>
     <input
-      id="endpoint"
+      id="endpoint-input"
       type="text"
       :disabled="state.loading"
       v-model="state.endpoint"
@@ -10,22 +10,101 @@
       spellcheck="false"
     />
   </div>
+
+  <div class="row">
+    <div v-for="example in examples" :key="example.id" class="col">
+      <input
+        :id="`example-${example.id}`"
+        type="radio"
+        name="examples"
+        :value="example.id"
+        v-model="state.selected"
+        @change="selectExample(example.query)"
+      />
+      <label :for="`example-${example.id}`" class="example-query-label">{{ example.name }}</label>
+    </div>
+
+    <div class="col">
+      <button class="btn danger" @click="reset">RESET</button>
+    </div>
+  </div>
+
   <textarea class="textarea" spellcheck="false" v-model="state.query" :disabled="state.loading"></textarea>
-  <el-button :disabled="state.loading" @click="loadData">Query</el-button>
+
+  <div class="row rtl">
+    <div class="col col-3">
+      <button class="btn query-btn" :disabled="state.loading" @click="loadData">Query</button>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { reactive } from 'vue';
 
-const state = reactive({
-  loading: false,
+const examples = [
+  {
+    id: 0,
+    name: 'example0',
+    query: `#Cats
+SELECT ?item ?itemLabel 
+WHERE 
+{
+  ?item wdt:P31 wd:Q146.
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+}`,
+  },
+  {
+    id: 1,
+    name: 'example1',
+    query: `#Goats
+SELECT ?item ?itemLabel 
+WHERE 
+{
+  ?item wdt:P31 wd:Q2934.
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+}`,
+  },
+  {
+    id: 2,
+    name: 'example2',
+    query: `#Cats, with pictures
+#defaultView:ImageGrid
+SELECT ?item ?itemLabel ?pic
+WHERE
+{
+?item wdt:P31 wd:Q146 .
+?item wdt:P18 ?pic
+SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en" }
+}`,
+  },
+];
+
+const initState = {
   endpoint: 'https://query.wikidata.org/sparql',
+  loading: false,
+  selected: false,
   query: '',
   head: [],
   result: [],
-});
+};
+
+const state = reactive({ ...initState });
+
+const selectExample = (query) => {
+  state.query = query;
+};
+
+// Unselect example and clear textarea input
+const reset = () => {
+  Object.assign(state, initState);
+};
 
 const loadData = async () => {
+  // if query is empty, stop
+  if (state.query === '') {
+    return;
+  }
+
   // Query Results JSON Format https://www.w3.org/TR/sparql11-results-json/
   const headers = { Accept: 'application/sparql-results+json' };
   const url = `${state.endpoint}?query=${encodeURIComponent(state.query)}`;
@@ -42,7 +121,7 @@ const loadData = async () => {
     const { head: { vars } = {}, results: { bindings } = {} } = await response.json();
 
     if (vars === undefined || vars.length === 0) {
-      throw `Empty head`;
+      throw 'Empty head';
     }
 
     state.head = vars;
@@ -57,42 +136,3 @@ const loadData = async () => {
   }
 };
 </script>
-
-<style>
-html {
-  box-sizing: border-box;
-  padding: 16px;
-}
-
-*,
-::before,
-::after {
-  box-sizing: inherit;
-}
-
-body {
-  padding: 0;
-  margin: 0;
-}
-
-.endpoint-container {
-  margin-bottom: 20px;
-  font-size: 16px;
-}
-
-#endpoint {
-  display: block;
-  width: 100%;
-  height: 40px;
-  padding: 0 8px;
-  font-size: inherit;
-  line-height: 40px;
-}
-
-.textarea {
-  width: 100%;
-  height: 300px;
-  font-size: 16px;
-  tab-size: 2;
-}
-</style>
