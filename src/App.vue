@@ -1,100 +1,98 @@
 <template>
   <div class="endpoint-container">
     <label for="endpoint">Query endpoint</label>
-    <input id="endpoint" type="text" v-model="endpoint" />
+    <input
+      id="endpoint"
+      type="text"
+      :disabled="state.loading"
+      v-model="state.endpoint"
+      placeholder="Endpoint"
+      spellcheck="false"
+    />
   </div>
-
-  <textarea
-    class="query-input"
-    spellcheck="false"
-    v-model="sparqlQuery"
-    @keydown.tab.prevent="indent($event)"
-    :disabled="fetching"
-  ></textarea>
-
-  <el-button @click="startQuery" :disabled="fetching">Query</el-button>
-
-  <div v-if="fetched">
-    <el-table :data="tableData" style="width: 100%">
-      <el-table-column v-for="col in cols" :label="col" :prop="`${col}.value`"></el-table-column>
-    </el-table>
-  </div>
+  <textarea class="textarea" spellcheck="false" v-model="state.query" :disabled="state.loading"></textarea>
+  <el-button :disabled="state.loading" @click="loadData">Query</el-button>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { reactive } from 'vue';
 
-const fetching = ref(false);
-const fetched = ref(false);
-const cols = ref([]);
-const tableData = ref([]);
-const endpoint = ref('https://query.wikidata.org/sparql');
-const sparqlQuery = ref(`SELECT ?item ?itemLabel
-WHERE
-{
-  ?item wdt:P31 wd:Q146 .
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
-}
-limit 50`);
+const state = reactive({
+  loading: false,
+  endpoint: 'https://query.wikidata.org/sparql',
+  query: '',
+  head: [],
+  result: [],
+});
 
-const startQuery = () => {
+const loadData = async () => {
   // Query Results JSON Format https://www.w3.org/TR/sparql11-results-json/
   const headers = { Accept: 'application/sparql-results+json' };
-  const url = `${endpoint.value}?query=${encodeURIComponent(sparqlQuery.value)}`;
+  const url = `${state.endpoint}?query=${encodeURIComponent(state.query)}`;
 
-  // disable textarea and query button while fetching
-  fetching.value = true;
-  fetch(url, { headers })
-    .then((response) => {
-      if (!response.ok) {
-        fetched.value = false;
-        throw new Error(`HTTP status ${response.status}`);
-      }
+  // Disable input while fetching
+  state.loading = true;
+  try {
+    const response = await fetch(url, { headers });
 
-      return response.json();
-    })
-    .then((data) => {
-      const {
-        head: { vars },
-        results: { bindings },
-      } = data;
-      cols.value = vars;
-      tableData.value = bindings;
-      fetched.value = true;
-    })
-    .finally(() => {
-      fetching.value = false;
-    });
-};
+    if (!response.ok) {
+      throw `Bad request ${response.status} ${response.statusText}`;
+    }
 
-const indent = (event) => {
-  if (event === undefined) {
-    return;
+    const { head: { vars } = {}, results: { bindings } = {} } = await response.json();
+
+    if (vars === undefined || vars.length === 0) {
+      throw `Empty head`;
+    }
+
+    state.head = vars;
+    state.result = bindings;
+    console.log('head', vars);
+    console.log('result', bindings);
+  } catch (err) {
+    console.error(err);
+    state.result = [];
+  } finally {
+    state.loading = false;
   }
-
-  const { value, selectionStart, selectionEnd } = event.target;
-  event.target.value = `${value.substring(0, selectionStart)}\t${value.substring(selectionEnd)}`;
-  event.target.selectionStart = selectionStart + 1;
-  event.target.selectionEnd = selectionStart + 1;
 };
 </script>
 
-<style scoped>
+<style>
+html {
+  box-sizing: border-box;
+  padding: 16px;
+}
+
+*,
+::before,
+::after {
+  box-sizing: inherit;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+}
+
 .endpoint-container {
   margin-bottom: 20px;
   font-size: 16px;
 }
 
 #endpoint {
-  width: 40%;
-  font-size: 16px;
-  margin: 10px;
+  display: block;
+  width: 100%;
+  height: 40px;
+  padding: 0 8px;
+  font-size: inherit;
+  line-height: 40px;
 }
 
-.query-input {
+.textarea {
   width: 100%;
   height: 300px;
-  tab-size: 2;
   font-size: 16px;
+  tab-size: 2;
 }
 </style>
