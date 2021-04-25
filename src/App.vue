@@ -1,5 +1,5 @@
 <template>
-  <div class="endpoint-container">
+  <div>
     <label for="endpoint-input">Query endpoint</label>
     <input
       id="endpoint-input"
@@ -29,7 +29,13 @@
     </div>
   </div>
 
-  <textarea class="textarea" spellcheck="false" v-model="state.query" :disabled="state.loading"></textarea>
+  <div class="position-relative">
+    <textarea class="textarea" spellcheck="false" v-model="state.query" :disabled="state.loading"></textarea>
+
+    <div v-if="state.loading" class="position-absolute-center">
+      <loading-spinner></loading-spinner>
+    </div>
+  </div>
 
   <div class="row rtl">
     <div class="col col-3">
@@ -40,14 +46,15 @@
 
 <script setup>
 import { reactive } from 'vue';
+import LoadingSpinner from './components/LoadingSpinner.vue';
 
 const examples = [
   {
     id: 0,
     name: 'example0',
     query: `#Cats
-SELECT ?item ?itemLabel 
-WHERE 
+SELECT ?item ?itemLabel
+WHERE
 {
   ?item wdt:P31 wd:Q146.
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
@@ -57,8 +64,8 @@ WHERE
     id: 1,
     name: 'example1',
     query: `#Goats
-SELECT ?item ?itemLabel 
-WHERE 
+SELECT ?item ?itemLabel
+WHERE
 {
   ?item wdt:P31 wd:Q2934.
   SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
@@ -111,6 +118,7 @@ const loadData = async () => {
 
   // Disable input while fetching
   state.loading = true;
+  state.result = [];
   try {
     const response = await fetch(url, { headers });
 

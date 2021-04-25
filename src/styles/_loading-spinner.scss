@@ -1,0 +1,42 @@
+$spinner-size: 80px;
+$spinner-color: #000080;
+$spinner-rotation-duration: 1.2;
+
+.loading-spinner {
+  position: relative;
+  width: $spinner-size;
+  height: $spinner-size;
+}
+
+.strip {
+  transform-origin: $spinner-size / 2 $spinner-size / 2;
+  animation: spinner 1.2s linear infinite;
+
+  &::after {
+    position: absolute;
+    top: 3px;
+    left: 37px;
+    width: 6px;
+    height: 18px;
+    content: '';
+    background: $spinner-color;
+    border-radius: 30%;
+  }
+
+  @for $i from 1 through 12 {
+    &:nth-child(#{$i}) {
+      transform: rotate(#{($i - 1) * 30}deg);
+      animation-delay: #{-$spinner-rotation-duration + $i * $spinner-rotation-duration / 12}s;
+    }
+  }
+}
+
+@keyframes spinner {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
