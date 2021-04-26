@@ -7,6 +7,7 @@ SELECT ?item ?itemLabel
 WHERE
 {
   ?item wdt:P31 wd:Q146 .
+  ?item wdt:P18 ?pic
   SERVICE wikibase:label { bd:serviceParam wikibase:language "en" . }
 }`,
   },
