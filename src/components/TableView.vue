@@ -9,7 +9,10 @@
 
       <tr v-for="row in result">
         <td v-for="h in head" :key="h">
-          <span v-if="row[h]">{{ row[h].value }}</span>
+          <a v-if="row[h] && row[h].type === 'uri'" :href="row[h].value" target="_blank" rel="noopener noreferrer">
+            {{ row[h].value }}
+          </a>
+          <span v-else-if="row[h]">{{ row[h].value }}</span>
         </td>
       </tr>
     </table>
