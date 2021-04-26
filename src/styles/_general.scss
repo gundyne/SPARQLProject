@@ -83,6 +83,20 @@ body {
   border-radius: 4px;
   outline: 0;
 
+  &.cat {
+    background-image: url('../assets/cat.jpg');
+    background-repeat: no-repeat;
+    background-position: 90% 50%;
+    background-size: 300px;
+  }
+
+  &.nobel {
+    background-image: url('../assets/Nobel_Prize.png');
+    background-repeat: no-repeat;
+    background-position: 90% 50%;
+    background-size: 200px;
+  }
+
   &:focus {
     border-color: $active-border-color;
   }

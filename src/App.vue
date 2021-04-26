@@ -30,7 +30,16 @@
   </div>
 
   <div class="position-relative">
-    <textarea class="textarea" spellcheck="false" v-model="state.query" :disabled="state.loading"></textarea>
+    <textarea
+      class="textarea"
+      :class="{
+        cat: state.selected === 0,
+        nobel: state.selected === 1 || state.selected === 2,
+      }"
+      spellcheck="false"
+      v-model="state.query"
+      :disabled="state.loading"
+    ></textarea>
 
     <div v-if="state.loading" class="position-absolute-center">
       <loading-spinner></loading-spinner>
