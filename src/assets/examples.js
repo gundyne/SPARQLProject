@@ -13,17 +13,6 @@ WHERE
   {
     id: 1,
     name: 'example1',
-    query: `#Goats
-SELECT ?item ?itemLabel
-WHERE
-{
-  ?item wdt:P31 wd:Q2934 .
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "en" . }
-}`,
-  },
-  {
-    id: 2,
-    name: 'example2',
     query: `SELECT ?countryLabel ?peacePrize ?literaturePrize ?chemistryPrize ?physicsPrize ?physmedPrize
 WHERE
 {
@@ -85,41 +74,56 @@ WHERE
 ORDER BY DESC(?peacePrize) DESC(?literaturePrize) DESC(?chemistryPrize) DESC(?physicsPrize) DESC(?physmedPrize)`,
   },
   {
-	id: 3,
-    name: 'example3',
-    query: `SELECT * WHERE{
+    id: 2,
+    name: 'example2',
+    query: `SELECT *
+WHERE
+{
   {
-  SELECT ?countryLabel (COUNT(*) AS ?totalPrize) WHERE
+    SELECT ?countryLabel (COUNT(*) AS ?totalPrize)
+    WHERE
     {
-        {?winner wdt:P31 wd:Q5; wdt:P166 wd:Q35637.
-          ?winner wdt:P27 ?country .}
-        UNION{
+      {
+        ?winner wdt:P31 wd:Q5; wdt:P166 wd:Q35637.
+        ?winner wdt:P27 ?country .
+      }
+      UNION
+      {
         ?winner wdt:P31 wd:Q5; wdt:P166 wd:Q37922.
-          ?winner wdt:P27 ?country .}
-        UNION{
+        ?winner wdt:P27 ?country .
+      }
+      UNION
+      {
         ?winner wdt:P31 wd:Q5; wdt:P166 wd:Q44585.
-          ?winner wdt:P27 ?country .}
-        UNION{
+        ?winner wdt:P27 ?country .
+      }
+      UNION
+      {
         ?winner wdt:P31 wd:Q5; wdt:P166 wd:Q38104.
-          ?winner wdt:P27 ?country .}
-        UNION{
+        ?winner wdt:P27 ?country .
+      }
+      UNION
+      {
         ?winner wdt:P31 wd:Q5; wdt:P166 wd:Q80061.
-          ?winner wdt:P27 ?country .}
-        SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+        ?winner wdt:P27 ?country .
+      }
+      SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
     }
-  GROUP BY(?countryLabel)
+    GROUP BY(?countryLabel)
   }
-OPTIONAL
+  OPTIONAL
   {
-    SELECT ?countryLabel ?medianIncome WHERE
+    SELECT ?countryLabel ?medianIncome
+    WHERE
     {
       ?country wdt:P31 wd:Q6256.
       ?country wdt:P3529 ?medianIncome.
       ?country rdfs:label ?countryLabel
     }
   }
-}ORDER BY DESC(?totalPrize) DESC(?medianIncome)`
-  }
+}
+ORDER BY DESC(?totalPrize) DESC(?medianIncome)`,
+  },
 ];
 
 export default examples;
